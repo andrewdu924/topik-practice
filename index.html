@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>韩语TOPIK练习系统</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <!-- 引入Lucide图标 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.308.0/lucide.min.js"></script>
+    <!-- 引入React -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <!-- 引入Babel用于JSX转换 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.22.20/babel.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // 使用React hooks
+        const { useState, useEffect } = React;
+        
+        // 初始化Lucide图标
+        const { createIcons, icons } = lucide;
+        
+        // TOPIK题库数据
+        const sampleQuestions = {
+          // TOPIK I (初级)
+          topik1: {
+            // 2023年试题
+            "2023": {
+              listening: [
+                {
+                  id: '2023-l1-1',
+                  year: '2023',
+                  type: 'listening',
+                  level: 'topik1',
+                  part: 1,
+                  question: '다음을 듣고 알맞은 그림을 고르십시오.',
+                  audioUrl: null,
+                  options: [
+                    '여자는 책을 읽고 있습니다.',
+                    '여자는 음악을 듣고 있습니다.',
+                    '여자는 텔레비전을 보고 있습니다.',
+                    '여자는 쇼핑을 하고 있습니다.'
+                  ],
+                  answer: 1,
+                  explanation: '音频中说女士正在听音乐，因此答案是选项2'
+                },
+                {
+                  id: '2023-l1-2',
+                  year: '2023',
+                  type: 'listening',
+                  level: 'topik1',
+                  part: 1,
+                  question: '이 사람은 무엇을 좋아합니까?',
+                  audioUrl: null,
+                  options: [
+                    '영화 보기',
+                    '책 읽기',
+                    '노래 부르기',
+                    '요리하기'
+                  ],
+                  answer: 2,
+                  explanation: '音频中提到此人喜欢唱歌，因此答案是选项3'
+                }
+              ],
+              reading: [
+                {
+                  id: '2023-r1-1',
+                  year: '2023',
+                  type: 'reading',
+                  level: 'topik1',
+                  part: 1,
+                  question: '다음 글을 읽고 무엇에 대한 글인지 고르십시오.',
+                  content: '저는 아침에 일어나서 운동을 합니다. 그리고 아침을 먹습니다. 학교에 가기 전에 항상 이렇게 합니다.',
+                  options: [
+                    '취미',
+                    '아침 습관',
+                    '학교 생활',
+                    '운동 방법'
+                  ],
+                  answer: 1,
+                  explanation: '文章描述了"我"早上起床后的习惯，因此是关于"早晨习惯"的文章'
+                }
+              ]
+            }
+          },
+          // TOPIK II (中高级)
+          topik2: {
+            // 2023年试题
+            "2023": {
+              listening: [
+                {
+                  id: '2023-l2-1',
+                  year: '2023',
+                  type: 'listening',
+                  level: 'topik2',
+                  part: 1,
+                  question: '남자의 생각으로 맞는 것을 고르십시오.',
+                  audioUrl: null,
+                  options: [
+                    '인터넷 강의가 효과적이다.',
+                    '직접 만나서 공부하는 것이 좋다.',
+                    '한국어는 독학으로 배우기 어렵다.',
+                    '언어는 매일 조금씩 공부해야 한다.'
+                  ],
+                  answer: 1,
+                  explanation: '音频中男子表示面对面学习比网络课程更有效果，因此答案是选项2'
+                }
+              ],
+              reading: [
+                {
+                  id: '2023-r2-1',
+                  year: '2023',
+                  type: 'reading',
+                  level: 'topik2',
+                  part: 1,
+                  question: '다음 글의 주제로 알맞은 것을 고르십시오.',
+                  content: '요즘 젊은 세대들은 디지털 기기를 통해 소통하는 것을 선호한다. 하지만 얼굴을 마주 보고 대화하는 것의 중요성은 여전히 크다. 직접적인 소통을 통해 감정을 더 정확하게 전달할 수 있기 때문이다.',
+                  options: [
+                    '디지털 기기의 발전',
+                    '젊은 세대의 특징',
+                    '대면 소통의 중요성',
+                    '의사소통 방식의 변화'
+                  ],
+                  answer: 2,
+                  explanation: '文章主要讨论了面对面交流的重要性，尽管年轻一代更喜欢通过数字设备交流，因此答案是选项3'
+                }
+              ],
+              writing: [
+                {
+                  id: '2023-w2-1',
+                  year: '2023',
+                  type: 'writing',
+                  level: 'topik2',
+                  part: 1,
+                  question: '다음 그림을 보고 200~300자로 글을 쓰십시오.',
+                  imageUrl: null,
+                  content: '图片显示了一个繁忙的城市街道场景',
+                  answer: null,
+                  explanation: '描述图片中的场景，可以包括：人们在做什么，环境如何，以及你对这个场景的感受或想法'
+                }
+              ]
+            }
+          }
+        };
+
+        // ImportExportTool 组件定义
+        const ImportExportTool = ({ currentQuestions, updateQuestions }) => {
+          const [importStatus, setImportStatus] = useState(null);
+          const [importError, setImportError] = useState(null);
+          const [showHelp, setShowHelp] = useState(false);
+          
+          // 导入题库
+          const handleImport = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              try {
+                const importedData = JSON.parse(e.target.result);
+                
+                // 验证导入的数据结构
+                if (!validateImportData(importedData)) {
+                  setImportError('导入的数据格式不正确，请检查JSON结构');
+                  setImportStatus('error');
+                  return;
+                }
+                
+                // 合并题库
+                const mergedQuestions = importNewQuestions(currentQuestions, importedData);
+                updateQuestions(mergedQuestions);
+                
+                // 统计新增题目数量
+                const newQuestionsCount = countNewQuestions(currentQuestions, importedData);
+                
+                setImportStatus('success');
+                setImportError(null);
+                alert(`成功导入 ${newQuestionsCount} 道新题目！`);
+              } catch (error) {
+                console.error('导入错误:', error);
+                setImportError('导入失败：' + error.message);
+                setImportStatus('error');
+              }
+            };
+            
+            reader.readAsText(file);
+          };
+          
+          // 导出当前题库
+          const handleExport = () => {
+            const dataStr = JSON.stringify(currentQuestions, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = `topik-questions-export-${new Date().toISOString().slice(0, 10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+          };
+          
+          // 清空题库
+          const handleClearQuestions = () => {
+            if (window.confirm('确定要清空题库吗？此操作不可恢复！')) {
+              updateQuestions({
+                topik1: {},
+                topik2: {}
+              });
+              alert('题库已清空');
+            }
+          };
+          
+          // 验证导入的数据结构
+          const validateImportData = (data) => {
+            // 简单验证：确保至少包含topik1或topik2其中一个分类
+            return (data.topik1 || data.topik2);
+          };
+          
+          // 统计要导入的题目数量
+          const countNewQuestions = (existingData, newData) => {
+            let count = 0;
+            
+            for (const level in newData) {
+              for (const year in newData[level]) {
+                for (const type in newData[level][year]) {
+                  count += newData[level][year][type].length;
+                }
+              }
+            }
+            
+            return count;
+          };
+          
+          // 将新题目合并到现有题库
+          const importNewQuestions = (existingQuestions, newQuestions) => {
+            // 深拷贝现有题库
+            const updatedQuestions = JSON.parse(JSON.stringify(existingQuestions));
+            
+            // 遍历新题目数据
+            for (const level in newQuestions) {
+              if (!updatedQuestions[level]) {
+                updatedQuestions[level] = {};
+              }
+              
+              for (const year in newQuestions[level]) {
+                if (!updatedQuestions[level][year]) {
+                  updatedQuestions[level][year] = {};
+                }
+                
+                for (const type in newQuestions[level][year]) {
+                  if (!updatedQuestions[level][year][type]) {
+                    updatedQuestions[level][year][type] = [];
+                  }
+                  
+                  // 添加新题目到对应类别
+                  updatedQuestions[level][year][type] = [
+                    ...updatedQuestions[level][year][type],
+                    ...newQuestions[level][year][type]
+                  ];
+                }
+              }
+            }
+            
+            return updatedQuestions;
+          };
+          
+          return (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-medium mb-4 flex items-center">
+                <span className="mr-2 text-blue-500">
+                  <i data-lucide="database"></i>
+                </span>
+                题库管理
+              </h2>
+              
+              <div className="space-y-4">
+                {/* 导入功能 */}
+                <div>
+                  <h3 className="text-md font-medium mb-2">导入题库</h3>
+                  <div className="flex items-center">
+                    <label className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md cursor-pointer hover:bg-blue-600">
+                      <span className="mr-2">
+                        <i data-lucide="upload"></i>
+                      </span>
+                      选择JSON文件
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept=".json"
+                        onChange={handleImport} 
+                      />
+                    </label>
+                    <button 
+                      className="ml-2 text-blue-500 hover:text-blue-700"
+                      onClick={() => setShowHelp(!showHelp)}
+                    >
+                      {showHelp ? '隐藏说明' : '查看说明'}
+                    </button>
+                  </div>
+                  
+                  {importStatus === 'error' && (
+                    <div className="mt-2 text-red-500 flex items-center">
+                      <span className="mr-1">
+                        <i data-lucide="alert-circle"></i>
+                      </span>
+                      {importError}
+                    </div>
+                  )}
+                  
+                  {importStatus === 'success' && (
+                    <div className="mt-2 text-green-500 flex items-center">
+                      <span className="mr-1">
+                        <i data-lucide="check-circle"></i>
+                      </span>
+                      导入成功！
+                    </div>
+                  )}
+                </div>
+                
+                {/* 导入说明 */}
+                {showHelp && (
+                  <div className="bg-gray-50 p-4 rounded-md text-sm">
+                    <h4 className="font-medium mb-2">导入格式说明：</h4>
+                    <p className="mb-2">JSON文件应包含以下结构：</p>
+                    <pre className="bg-gray-100 p-2 rounded-md overflow-x-auto text-xs">
+{`{
+  "topik1": {
+    "2024": {
+      "listening": [ ... 听力题数组 ... ],
+      "reading": [ ... 阅读题数组 ... ]
+    }
+  },
+  "topik2": {
+    "2024": {
+      "listening": [ ... 听力题数组 ... ],
+      "reading": [ ... 阅读题数组 ... ],
+      "writing": [ ... 写作题数组 ... ]
+    }
+  }
+}`}
+                    </pre>
+                    <p className="mt-2">每道题目应包含：id, year, type, level, question, options, answer 等字段。</p>
+                  </div>
+                )}
+                
+                {/* 导出与清空功能 */}
+                <div className="flex space-x-3 mt-4">
+                  <button 
+                    onClick={handleExport}
+                    className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                  >
+                    <span className="mr-2">
+                      <i data-lucide="download"></i>
+                    </span>
+                    导出题库
+                  </button>
+                  
+                  <button 
+                    onClick={handleClearQuestions}
+                    className="flex items-center px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                  >
+                    <span className="mr-2">
+                      <i data-lucide="trash-2"></i>
+                    </span>
+                    清空题库
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        // AddQuestionForm 组件定义
+        const AddQuestionForm = ({ onAddQuestion }) => {
+          const initialState = {
+            id: '',
+            year: new Date().getFullYear().toString(),
+            type: 'listening',
+            level: 'topik1',
+            part: 1,
+            question: '',
+            content: '',
+            audioUrl: '',
+            imageUrl: '',
+            options: ['', '', '', ''],
+            answer: 0,
+            explanation: ''
+          };
+          
+          const [formData, setFormData] = useState(initialState);
+          const [showForm, setShowForm] = useState(false);
+          
+          // 生成ID建议
+          const generateIdSuggestion = () => {
+            const prefix = `${formData.year}-${formData.type.charAt(0)}${formData.level.charAt(formData.level.length - 1)}`;
+            const suffix = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            return `${prefix}-${suffix}`;
+          };
+          
+          // 处理输入变化
+          const handleChange = (e) => {
+            const { name, value } = e.target;
+            setFormData({
+              ...formData,
+              [name]: value
+            });
+            
+            // 当改变年份、类型或级别时，自动更新ID建议
+            if (['year', 'type', 'level'].includes(name)) {
+              // 延迟执行，确保其他状态已更新
+              setTimeout(() => {
+                const suggestedId = generateIdSuggestion();
+                setFormData(prev => ({
+                  ...prev,
+                  id: suggestedId
+                }));
+              }, 0);
+            }
+          };
+          
+          // 处理选项变化
+          const handleOptionChange = (index, value) => {
+            const newOptions = [...formData.options];
+            newOptions[index] = value;
+            setFormData({
+              ...formData,
+              options: newOptions
+            });
+          };
+          
+          // 添加选项
+          const addOption = () => {
+            setFormData({
+              ...formData,
+              options: [...formData.options, '']
+            });
+          };
+          
+          // 删除选项
+          const removeOption = (index) => {
+            const newOptions = formData.options.filter((_, i) => i !== index);
+            // 如果删除的是当前选中的答案，重置答案
+            let newAnswer = formData.answer;
+            if (index === formData.answer) {
+              newAnswer = 0;
+            } else if (index < formData.answer) {
+              newAnswer = formData.answer - 1;
+            }
+            
+            setFormData({
+              ...formData,
+              options: newOptions,
+              answer: newAnswer
+            });
+          };
+          
+          // 提交表单
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            
+            // 验证必填字段
+            if (!formData.id || !formData.question) {
+              alert('请填写必要的字段：ID和题目问题');
+              return;
+            }
+            
+            // 如果是写作题，将答案设为null
+            const finalData = {
+              ...formData,
+              answer: formData.type === 'writing' ? null : parseInt(formData.answer, 10)
+            };
+            
+            // 添加到题库
+            onAddQuestion(finalData);
+            
+            // 重置表单
+            setFormData(initialState);
+            setShowForm(false);
+          };
+          
+          if (!showForm) {
+            return (
+              <button 
+                onClick={() => setShowForm(true)}
+                className="w-full py-3 bg-blue-500 text-white rounded-md flex items-center justify-center hover:bg-blue-600"
+              >
+                <span className="mr-2">
+                  <i data-lucide="plus"></i>
+                </span>
+                添加新题目
+              </button>
+            );
+          }
+          
+          return (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">添加新题目</h3>
+                <button 
+                  onClick={() => setShowForm(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <i data-lucide="x"></i>
+                </button>
+              </div>
+              
+              <form onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {/* 基本信息 */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">题目ID</label>
+                    <div className="flex">
+                      <input
+                        type="text"
+                        name="id"
+                        value={formData.id}
+                        onChange={handleChange}
+                        className="w-full p-2 border border-gray-300 rounded-md"
+                        placeholder="例如: 2024-l1-1"
+                      />
+                      <button 
+                        type="button"
+                        onClick={() => setFormData({...formData, id: generateIdSuggestion()})}
+                        className="ml-2 px-2 bg-gray-100 rounded-md text-xs"
+                        title="生成ID建议"
+                      >
+                        <i data-lucide="help-circle"></i>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">年份</label>
+                    <input
+                      type="text"
+                      name="year"
+                      value={formData.year}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      placeholder="例如: 2024"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">级别</label>
+                    <select
+                      name="level"
+                      value={formData.level}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="topik1">TOPIK I (初级)</option>
+                      <option value="topik2">TOPIK II (中高级)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">题型</label>
+                    <select
+                      name="type"
+                      value={formData.type}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value="listening">听力</option>
+                      <option value="reading">阅读</option>
+                      {formData.level === 'topik2' && <option value="writing">写作</option>}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">部分</label>
+                    <select
+                      name="part"
+                      value={formData.part}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                    >
+                      <option value={1}>第1部分</option>
+                      <option value={2}>第2部分</option>
+                      <option value={3}>第3部分</option>
+                      <option value={4}>第4部分</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* 题目内容 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">题目问题</label>
+                  <input
+                    type="text"
+                    name="question"
+                    value={formData.question}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder="输入题目问题"
+                    required
+                  />
+                </div>
+                
+                {/* 内容（阅读材料或图片描述） */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">
+                    {formData.type === 'reading' ? '阅读内容' : '补充内容描述'}
+                  </label>
+                  <textarea
+                    name="content"
+                    value={formData.content}
+                    onChange={handleChange}
+                    rows={4}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder={formData.type === 'reading' ? '输入阅读材料内容' : '输入补充描述'}
+                  />
+                </div>
+                
+                {/* 媒体URL */}
+                {formData.type === 'listening' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">音频URL</label>
+                    <input
+                      type="text"
+                      name="audioUrl"
+                      value={formData.audioUrl}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      placeholder="输入音频文件链接"
+                    />
+                  </div>
+                )}
+                
+                {formData.type === 'writing' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">图片URL</label>
+                    <input
+                      type="text"
+                      name="imageUrl"
+                      value={formData.imageUrl}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      placeholder="输入图片文件链接"
+                    />
+                  </div>
+                )}
+                
+                {/* 选项（听力和阅读题） */}
+                {(formData.type === 'listening' || formData.type === 'reading') && (
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-sm font-medium">选项</label>
+                      <button 
+                        type="button"
+                        onClick={addOption}
+                        className="text-blue-500 hover:text-blue-700 text-sm flex items-center"
+                        disabled={formData.options.length >= 6}
+                      >
+                        <span className="mr-1">
+                          <i data-lucide="plus"></i>
+                        </span>
+                        添加选项
+                      </button>
+                    </div>
+                    
+                    {formData.options.map((option, index) => (
+                      <div key={index} className="flex mb-2">
+                        <div className="flex items-center mr-2">
+                          <input
+                            type="radio"
+                            checked={parseInt(formData.answer) === index}
+                            onChange={() => setFormData({...formData, answer: index})}
+                            className="mr-1"
+                          />
+                          <span>{index + 1}.</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleOptionChange(index, e.target.value)}
+                          className="flex-1 p-2 border border-gray-300 rounded-md"
+                          placeholder={`选项 ${index + 1}`}
+                        />
+                        {formData.options.length > 2 && (
+                          <button 
+                            type="button"
+                            onClick={() => removeOption(index)}
+                            className="ml-2 text-red-500 hover:text-red-700"
+                          >
+                            <i data-lucide="x"></i>
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* 解释 */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium mb-1">解释/答案解析</label>
+                  <textarea
+                    name="explanation"
+                    value={formData.explanation}
+                    onChange={handleChange}
+                    rows={3}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    placeholder="输入答案解析或解释"
+                  />
+                </div>
+                
+                {/* 提交按钮 */}
+                <div className="flex justify-end">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowForm(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-md mr-2"
+                  >
+                    取消
+                  </button>
+                  <button 
+                    type="submit"
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center"
+                  >
+                    <span className="mr-2">
+                      <i data-lucide="save"></i>
+                    </span>
+                    保存题目
+                  </button>
+                </div>
+              </form>
+            </div>
+          );
+        };
+        
+        // 主应用组件
+        const App = () => {
+          // 状态管理
+          const [activeTab, setActiveTab] = useState('home');
+          const [level, setLevel] = useState('topik1');
+          const [questionType, setQuestionType] = useState('listening');
+          const [examYear, setExamYear] = useState('2023');
+          const [currentQuestions, setCurrentQuestions] = useState([]);
+          const [currentIndex, setCurrentIndex] = useState(0);
+          const [userAnswers, setUserAnswers] = useState({});
+          const [showResults, setShowResults] = useState(false);
+          const [wrongAnswers, setWrongAnswers] = useState([]);
+          const [timerActive, setTimerActive] = useState(false);
+          const [timeRemaining, setTimeRemaining] = useState(0);
+          const [practiceMode, setPracticeMode] = useState('regular'); // regular, mock, wrong
+          const [allQuestions, setAllQuestions] = useState(sampleQuestions); // 全部题库数据
+          
+          // 从localStorage加载数据
+          useEffect(() => {
+            // 加载错题集
+            const savedWrongAnswers = localStorage.getItem('topikWrongAnswers');
+            if (savedWrongAnswers) {
+              setWrongAnswers(JSON.parse(savedWrongAnswers));
+            }
+            
+            // 加载自定义题库
+            const savedQuestions = localStorage.getItem('topikQuestions');
+            if (savedQuestions) {
+              setAllQuestions(JSON.parse(savedQuestions));
+            }
+          }, []);
+          
+          // 保存数据到localStorage
+          useEffect(() => {
+            // 保存错题集
+            if (wrongAnswers.length > 0) {
+              localStorage.setItem('topikWrongAnswers', JSON.stringify(wrongAnswers));
+            }
+            
+            // 保存题库
+            localStorage.setItem('topikQuestions', JSON.stringify(allQuestions));
+          }, [wrongAnswers, allQuestions]);
+          
+          // 计时器逻辑
+          useEffect(() => {
+            let timer = null;
+            if (timerActive && timeRemaining > 0) {
+              timer = setInterval(() => {
+                setTimeRemaining(prev => prev - 1);
+              }, 1000);
+            } else if (timeRemaining === 0 && timerActive) {
+              finishExercise();
+            }
+            return () => clearInterval(timer);
+          }, [timerActive, timeRemaining]);
+          
+          // 设置练习题目
+          const setupQuestions = (mode) => {
+            setPracticeMode(mode);
+            
+            let questions = [];
+            if (mode === 'wrong') {
+              questions = wrongAnswers;
+            } else if (mode === 'mock') {
+              // 模拟考试模式 - 选择多种题型
+              const selectedYearData = allQuestions[level][examYear] || {};
+              const questionsList = [
+                ...selectedYearData.listening || [],
+                ...selectedYearData.reading || []
+              ];
+              
+              if (level === 'topik2' && selectedYearData.writing) {
+                questionsList.push(...selectedYearData.writing);
+              }
+              
+              questions = questionsList;
+              
+              // 设置计时器 (TOPIK I: 30分钟, TOPIK II: 50分钟)
+              setTimeRemaining(level === 'topik1' ? 30 * 60 : 50 * 60);
+              setTimerActive(true);
+            } else {
+              // 常规练习模式 - 按级别、年份和题型选择
+              const selectedYearData = allQuestions[level][examYear] || {};
+              questions = selectedYearData[questionType] || [];
+            }
+            
+            setCurrentQuestions(questions);
+            setCurrentIndex(0);
+            setUserAnswers({});
+            setShowResults(false);
+          };
+          
+          // 添加新题目
+          const handleAddQuestion = (newQuestion) => {
+            // 深拷贝现有题库
+            const updatedQuestions = JSON.parse(JSON.stringify(allQuestions));
+            
+            const { level, year, type } = newQuestion;
+            
+            // 确保各层级对象存在
+            if (!updatedQuestions[level]) {
+              updatedQuestions[level] = {};
+            }
+            
+            if (!updatedQuestions[level][year]) {
+              updatedQuestions[level][year] = {};
+            }
+            
+            if (!updatedQuestions[level][year][type]) {
+              updatedQuestions[level][year][type] = [];
+            }
+            
+            // 检查ID是否重复
+            const isDuplicate = updatedQuestions[level][year][type].some(q => q.id === newQuestion.id);
+            
+            if (isDuplicate) {
+              if (window.confirm(`已存在ID为 ${newQuestion.id} 的题目，要替换它吗？`)) {
+                // 替换已有题目
+                const index = updatedQuestions[level][year][type].findIndex(q => q.id === newQuestion.id);
+                updatedQuestions[level][year][type][index] = newQuestion;
+              } else {
+                return; // 取消添加
+              }
+            } else {
+              // 添加新题目
+              updatedQuestions[level][year][type].push(newQuestion);
+            }
+            
+            // 更新题库
+            setAllQuestions(updatedQuestions);
+            alert(`成功添加题目: ${newQuestion.id}`);
+          };
+          
+          // 提交答案
+          const submitAnswer = (questionId, selectedOption) => {
+            setUserAnswers(prev => ({
+              ...prev,
+              [questionId]: selectedOption
+            }));
+          };
+          
+          // 完成练习
+          const finishExercise = () => {
+            setTimerActive(false);
+            setShowResults(true);
+            
+            // 记录错题
+            const newWrongAnswers = currentQuestions.filter(q => {
+              return q.answer !== null && userAnswers[q.id] !== q.answer;
+            });
+            
+            if (newWrongAnswers.length > 0) {
+              // 避免重复添加错题
+              const existingIds = new Set(wrongAnswers.map(q => q.id));
+              const uniqueNewWrongs = newWrongAnswers.filter(q => !existingIds.has(q.id));
+              
+              if (uniqueNewWrongs.length > 0) {
+                setWrongAnswers(prev => [...prev, ...uniqueNewWrongs]);
+              }
+            }
+          };
+          
+          // 格式化时间显示
+          const formatTime = (seconds) => {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+          };
+          
+          // 计算统计数据
+          const calculateStats = () => {
+            if (currentQuestions.length === 0) return { correct: 0, percentage: 0 };
+            
+            const answeredQuestions = currentQuestions.filter(q => q.answer !== null);
+            const correctAnswers = answeredQuestions.filter(q => userAnswers[q.id] === q.answer);
+            
+            return {
+              correct: correctAnswers.length,
+              percentage: Math.round((correctAnswers.length / answeredQuestions.length) * 100) || 0
+            };
+          };
+          
+          // 针对不同题型的问题组件
+          const QuestionRenderer = ({ question }) => {
+            if (!question) return <div>题目载入中...</div>;
+            
+            return (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <span className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                    {question.id}
+                  </span>
+                  <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                    {question.level === 'topik1' ? 'TOPIK I' : 'TOPIK II'}
+                  </span>
+                  <span className="inline-block bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                    {question.year}年
+                  </span>
+                  <span className="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
+                    {question.type === 'listening' ? '听力' : 
+                     question.type === 'reading' ? '阅读' : '写作'}
+                  </span>
+                  {question.part && (
+                    <span className="inline-block bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                      第{question.part}部分
+                    </span>
+                  )}
+                </div>
+                
+                <h3 className="text-lg font-medium mb-3">{question.question}</h3>
+                
+                {question.audioUrl && (
+                  <div className="mb-4">
+                    <button className="bg-blue-500 text-white px-3 py-1 rounded-md flex items-center">
+                      <span className="mr-1">
+                        <i data-lucide="headphones"></i>
+                      </span>
+                      播放音频
+                    </button>
+                  </div>
+                )}
+                
+                {question.content && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded-md whitespace-pre-line">
+                    {question.content}
+                  </div>
+                )}
+                
+                {question.imageUrl && (
+                  <div className="mb-4">
+                    <img src={question.imageUrl || "https://via.placeholder.com/300x200"} alt="题目图片" className="rounded-md" />
+                  </div>
+                )}
+                
+                {question.options && (
+                  <div className="mt-4 space-y-2">
+                    {question.options.map((option, idx) => (
+                      <div 
+                        key={idx}
+                        className={`p-3 rounded-md border cursor-pointer transition-colors ${
+                          userAnswers[question.id] === idx 
+                            ? 'bg-blue-50 border-blue-300' 
+                            : 'bg-white border-gray-200 hover:bg-gray-50'
+                        }`}
+                        onClick={() => submitAnswer(question.id, idx)}
+                      >
+                        <span className="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-800 text-center leading-6 mr-2">
+                          {idx + 1}
+                        </span>
+                        {option}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {question.answer === null && (
+                  <div className="mt-4">
+                    <textarea 
+                      className="w-full p-3 border border-gray-300 rounded-md"
+                      rows={6}
+                      placeholder="在此输入你的答案..."
+                    ></textarea>
+                  </div>
+                )}
+              </div>
+            );
+          };
+          
+          // 渲染主页内容
+          const renderHome = () => (
+            <div className="space-y-8">
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-8 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-bold mb-4">韩语TOPIK练习系统</h2>
+                <p className="mb-4">专注于TOPIK考试练习和错题管理的学习助手</p>
+                <div className="flex flex-wrap gap-3">
+                  <button 
+                    onClick={() => setActiveTab('practice')} 
+                    className="bg-white text-blue-600 px-4 py-2 rounded-md font-medium flex items-center"
+                  >
+                    <span className="mr-2">
+                      <i data-lucide="pencil"></i>
+                    </span>
+                    开始练习
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setActiveTab('wrong');
+                      setupQuestions('wrong');
+                    }} 
+                    className="bg-blue-400 bg-opacity-30 text-white px-4 py-2 rounded-md font-medium flex items-center"
+                  >
+                    <span className="mr-2">
+                      <i data-lucide="x-square"></i>
+                    </span>
+                    错题练习
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('manage')} 
+                    className="bg-blue-400 bg-opacity-30 text-white px-4 py-2 rounded-md font-medium flex items-center"
+                  >
+                    <span className="mr-2">
+                      <i data-lucide="settings"></i>
+                    </span>
+                    题库管理
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-center mb-3">
+                    <span className="text-blue-500 mr-2">
+                      <i data-lucide="book-open"></i>
+                    </span>
+                    <h3 className="text-lg font-medium">按类型练习</h3>
+                  </div>
+                  <p className="text-gray-600">针对不同题型进行专项练习，提高各个方面的能力</p>
+                </div>
+                
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-center mb-3">
+                    <span className="text-blue-500 mr-2">
+                      <i data-lucide="clock"></i>
+                    </span>
+                    <h3 className="text-lg font-medium">模拟考试</h3>
+                  </div>
+                  <p className="text-gray-600">在真实考试环境下进行练习，熟悉考试流程和时间管理</p>
+                </div>
+                
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <div className="flex items-center mb-3">
+                    <span className="text-blue-500 mr-2">
+                      <i data-lucide="bar-chart"></i>
+                    </span>
+                    <h3 className="text-lg font-medium">错题分析</h3>
+                  </div>
+                  <p className="text-gray-600">记录和分析错题，针对性地提高薄弱环节</p>
+                </div>
+              </div>
+              
+              {/* 题库统计信息 */}
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium mb-4">题库信息</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.keys(allQuestions).map(levelKey => {
+                    const levelData = allQuestions[levelKey];
+                    const yearCount = Object.keys(levelData).length;
+                    
+                    // 计算此级别的总题目数
+                    let totalCount = 0;
+                    Object.keys(levelData).forEach(yearKey => {
+                      const yearData = levelData[yearKey];
+                      Object.keys(yearData).forEach(typeKey => {
+                        totalCount += yearData[typeKey].length;
+                      });
+                    });
+                    
+                    return (
+                      <div key={levelKey} className="bg-gray-50 p-4 rounded-md">
+                        <div className="text-sm text-gray-500">
+                          {levelKey === 'topik1' ? 'TOPIK I' : 'TOPIK II'}
+                        </div>
+                        <div className="font-bold text-xl">{totalCount}</div>
+                        <div className="text-xs text-gray-500">
+                          {yearCount}个年份, {totalCount}道题目
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+          
+          // 渲染练习设置页面
+          const renderPracticeSetup = () => (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-xl font-medium mb-6">选择练习方式</h2>
+              
+              <div className="mb-6">
+                <h3 className="text-md font-medium mb-3">TOPIK 级别</h3>
+                <div className="flex flex-wrap gap-3">
+                  <button 
+                    onClick={() => setLevel('topik1')}
+                    className={`px-4 py-2 rounded-md ${
+                      level === 'topik1' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    TOPIK I (初级)
+                  </button>
+                  <button 
+                    onClick={() => setLevel('topik2')}
+                    className={`px-4 py-2 rounded-md ${
+                      level === 'topik2' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    TOPIK II (中高级)
+                  </button>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <h3 className="text-md font-medium mb-3">考试年份</h3>
+                <div className="flex flex-wrap gap-3">
+                  <button 
+                    onClick={() => setExamYear('2023')}
+                    className={`px-4 py-2 rounded-md ${
+                      examYear === '2023' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    2023年
+                  </button>
+                  <button 
+                    onClick={() => setExamYear('2022')}
+                    className={`px-4 py-2 rounded-md ${
+                      examYear === '2022' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    2022年
+                  </button>
+                  <button 
+                    onClick={() => setExamYear('2021')}
+                    className={`px-4 py-2 rounded-md ${
+                      examYear === '2021' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    2021年
+                  </button>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <h3 className="text-md font-medium mb-3">题型选择</h3>
+                <div className="flex flex-wrap gap-3">
+                  <button 
+                    onClick={() => setQuestionType('listening')}
+                    className={`px-4 py-2 rounded-md flex items-center ${
+                      questionType === 'listening' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    <span className="mr-2">
+                      <i data-lucide="headphones"></i>
+                    </span>
+                    听力
+                  </button>
+                  <button 
+                    onClick={() => setQuestionType('reading')}
+                    className={`px-4 py-2 rounded-md flex items-center ${
+                      questionType === 'reading' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    <span className="mr-2">
+                      <i data-lucide="book-open"></i>
+                    </span>
+                    阅读
+                  </button>
+                  {level === 'topik2' && (
+                    <button 
+                      onClick={() => setQuestionType('writing')}
+                      className={`px-4 py-2 rounded-md flex items-center ${
+                        questionType === 'writing' 
+                          ? 'bg-blue-500 text-white' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <span className="mr-2">
+                        <i data-lucide="pencil"></i>
+                      </span>
+                      写作
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-3 mt-8">
+                <button 
+                  onClick={() => setupQuestions('regular')}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md font-medium"
+                >
+                  开始练习
+                </button>
+                <button 
+                  onClick={() => setupQuestions('mock')}
+                  className="bg-green-500 text-white px-4 py-2 rounded-md font-medium flex items-center"
+                >
+                  <span className="mr-2">
+                    <i data-lucide="clock"></i>
+                  </span>
+                  模拟考试
+                </button>
+                <button 
+                  onClick={() => setActiveTab('home')}
+                  className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md"
+                >
+                  返回
+                </button>
+              </div>
+            </div>
+          );
+          
+          // 渲染练习/考试页面
+          const renderExercise = () => {
+            if (currentQuestions.length === 0) {
+              return <div className="text-center p-8">没有可用的题目</div>;
+            }
+            
+            const currentQuestion = currentQuestions[currentIndex];
+            const stats = calculateStats();
+            
+            return (
+              <div>
+                {/* 顶部信息条 */}
+                <div className="flex justify-between items-center mb-4 bg-gray-50 p-3 rounded-md">
+                  <div>
+                    {practiceMode === 'mock' ? '模拟考试' : practiceMode === 'wrong' ? '错题练习' : '题型练习'} | 
+                    {` ${currentIndex + 1} / ${currentQuestions.length} 题`}
+                  </div>
+                  {timerActive && (
+                    <div className="flex items-center">
+                      <span className="mr-1 text-blue-500">
+                        <i data-lucide="clock"></i>
+                      </span>
+                      <span className={timeRemaining < 300 ? 'text-red-500 font-medium' : ''}>
+                        {formatTime(timeRemaining)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                
+                {!showResults ? (
+                  <>
+                    <QuestionRenderer question={currentQuestion} />
+                    
+                    <div className="flex justify-between mt-6">
+                      <button 
+                        onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+                        disabled={currentIndex === 0}
+                        className={`px-4 py-2 rounded-md ${
+                          currentIndex === 0 
+                            ? 'bg-gray-100 text-gray-400' 
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        上一题
+                      </button>
+                      
+                      {currentIndex < currentQuestions.length - 1 ? (
+                        <button 
+                          onClick={() => setCurrentIndex(currentIndex + 1)}
+                          className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                        >
+                          下一题
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={finishExercise}
+                          className="bg-green-500 text-white px-4 py-2 rounded-md"
+                        >
+                          完成练习
+                        </button>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-white p-6 rounded-lg shadow-md">
+                    <h2 className="text-xl font-medium mb-4 flex items-center">
+                      <span className="text-green-500 mr-2">
+                        <i data-lucide="check-square"></i>
+                      </span>
+                      练习结果
+                    </h2>
+                    
+                    <div className="mb-6 grid grid-cols-2 gap-4">
+                      <div className="bg-blue-50 p-4 rounded-md">
+                        <div className="text-sm text-blue-700">正确率</div>
+                        <div className="text-2xl font-bold">{stats.percentage}%</div>
+                      </div>
+                      <div className="bg-green-50 p-4 rounded-md">
+                        <div className="text-sm text-green-700">正确数量</div>
+                        <div className="text-2xl font-bold">{stats.correct} / {currentQuestions.filter(q => q.answer !== null).length}</div>
+                      </div>
+                    </div>
+                    
+                    <h3 className="text-lg font-medium mb-3">题目详情：</h3>
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {currentQuestions.map((q, idx) => {
+                        // 跳过没有标准答案的题目（如写作题）
+                        if (q.answer === null) return null;
+                        
+                        const isCorrect = userAnswers[q.id] === q.answer;
+                        
+                        return (
+                          <div 
+                            key={q.id} 
+                            className={`p-3 border rounded-md ${
+                              isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
+                            }`}
+                          >
+                            <div className="flex justify-between">
+                              <div>
+                                <span className="inline-block w-6 h-6 rounded-full text-center leading-6 mr-2 text-xs font-medium bg-gray-100">
+                                  {idx + 1}
+                                </span>
+                                {q.question.length > 50 ? q.question.substring(0, 50) + '...' : q.question}
+                              </div>
+                              {isCorrect ? (
+                                <span className="text-green-500">
+                                  <i data-lucide="check-square"></i>
+                                </span>
+                              ) : (
+                                <span className="text-red-500">
+                                  <i data-lucide="x-square"></i>
+                                </span>
+                              )}
+                            </div>
+                            
+                            {!isCorrect && (
+                              <div className="mt-2 text-sm">
+                                <div className="text-red-600">
+                                  你的答案: {q.options && q.options[userAnswers[q.id]]}
+                                </div>
+                                <div className="text-green-600">
+                                  正确答案: {q.options && q.options[q.answer]}
+                                </div>
+                                {q.explanation && (
+                                  <div className="mt-1 p-2 bg-gray-50 rounded text-gray-700">
+                                    {q.explanation}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-3 mt-6">
+                      <button 
+                        onClick={() => {
+                          setActiveTab('practice');
+                          setShowResults(false);
+                        }}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                      >
+                        新的练习
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab('home')}
+                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded-md"
+                      >
+                        返回首页
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          };
+          
+          // 渲染统计分析页面
+          const renderStats = () => {
+            // 计算题目总数
+            const countQuestions = () => {
+              let total = 0;
+              
+              // 遍历所有年份和题型
+              Object.keys(allQuestions).forEach(levelKey => {
+                const levelData = allQuestions[levelKey];
+                Object.keys(levelData).forEach(yearKey => {
+                  const yearData = levelData[yearKey];
+                  Object.keys(yearData).forEach(typeKey => {
+                    total += yearData[typeKey].length;
+                  });
+                });
+              });
+              
+              return total;
+            };
+            
+            const totalQuestions = countQuestions();
+            
+            const correctPercentage = wrongAnswers.length > 0 
+              ? Math.round(((totalQuestions - wrongAnswers.length) / totalQuestions) * 100)
+              : 100;
+            
+            return (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-medium mb-6">学习分析</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded-md">
+                    <div className="text-sm text-blue-700">已练习题目</div>
+                    <div className="text-2xl font-bold">{totalQuestions}</div>
+                  </div>
+                  <div className="bg-red-50 p-4 rounded-md">
+                    <div className="text-sm text-red-700">错题数量</div>
+                    <div className="text-2xl font-bold">{wrongAnswers.length}</div>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-md">
+                    <div className="text-sm text-green-700">总正确率</div>
+                    <div className="text-2xl font-bold">{correctPercentage}%</div>
+                  </div>
+                </div>
+                
+                <h3 className="text-lg font-medium mb-3">薄弱区域分析</h3>
+                
+                <div className="space-y-4">
+                  {wrongAnswers.length > 0 ? (
+                    <>
+                      <div className="flex items-center mb-2">
+                        <div className="w-32">听力题错题：</div>
+                        <div className="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-full" style={{
+                            width: `${Math.round((wrongAnswers.filter(q => q.id.startsWith('l') || q.type === 'listening').length / wrongAnswers.length) * 100)}%`
+                          }}></div>
+                        </div>
+                        <div className="ml-2 text-sm">
+                          {wrongAnswers.filter(q => q.id.startsWith('l') || q.type === 'listening').length} 题
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center mb-2">
+                        <div className="w-32">阅读题错题：</div>
+                        <div className="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-green-500 rounded-full" style={{
+                            width: `${Math.round((wrongAnswers.filter(q => q.id.startsWith('r') || q.type === 'reading').length / wrongAnswers.length) * 100)}%`
+                          }}></div>
+                        </div>
+                        <div className="ml-2 text-sm">
+                          {wrongAnswers.filter(q => q.id.startsWith('r') || q.type === 'reading').length} 题
+                        </div>
+                      </div>
+                      
+                      <button 
+                        onClick={() => {
+                          setActiveTab('wrong');
+                          setupQuestions('wrong');
+                        }} 
+                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md flex items-center"
+                      >
+                        <span className="mr-2">
+                          <i data-lucide="pencil"></i>
+                        </span>
+                        练习错题
+                      </button>
+                    </>
+                  ) : (
+                    <div className="text-gray-500 p-4 bg-gray-50 rounded-md">
+                      还没有错题记录，继续加油！
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          };
+          
+          // 渲染题库管理页面
+          const renderManage = () => (
+            <div className="space-y-6">
+              <h2 className="text-xl font-medium mb-4">题库管理</h2>
+              
+              {/* 添加新题目 */}
+              <AddQuestionForm onAddQuestion={handleAddQuestion} />
+              
+              {/* 导入/导出题库 */}
+              <ImportExportTool 
+                currentQuestions={allQuestions} 
+                updateQuestions={setAllQuestions} 
+              />
+              
+              {/* 题库统计 */}
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-medium mb-4">题库结构</h3>
+                <div className="max-h-96 overflow-y-auto p-3 bg-gray-50 rounded-md">
+                  {Object.keys(allQuestions).map(levelKey => (
+                    <div key={levelKey} className="mb-4">
+                      <h4 className="font-medium">{levelKey === 'topik1' ? 'TOPIK I (初级)' : 'TOPIK II (中高级)'}</h4>
+                      {Object.keys(allQuestions[levelKey]).length > 0 ? (
+                        <ul className="ml-4">
+                          {Object.keys(allQuestions[levelKey]).map(yearKey => (
+                            <li key={yearKey} className="my-2">
+                              <span className="font-medium">{yearKey}年:</span>
+                              <ul className="ml-4">
+                                {Object.keys(allQuestions[levelKey][yearKey]).map(typeKey => (
+                                  <li key={typeKey}>
+                                    {typeKey === 'listening' ? '听力' : 
+                                     typeKey === 'reading' ? '阅读' : '写作'}: 
+                                    {allQuestions[levelKey][yearKey][typeKey].length}道题
+                                  </li>
+                                ))}
+                              </ul>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-gray-500 ml-4">暂无数据</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+          
+          // 渲染主要内容
+          const renderContent = () => {
+            switch (activeTab) {
+              case 'home':
+                return renderHome();
+              case 'practice':
+                return currentQuestions.length > 0 ? renderExercise() : renderPracticeSetup();
+              case 'wrong':
+                return wrongAnswers.length > 0 ? renderExercise() : (
+                  <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                    <div className="text-gray-500 mb-4">暂时没有错题记录</div>
+                    <button 
+                      onClick={() => setActiveTab('practice')} 
+                      className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                    >
+                      开始练习
+                    </button>
+                  </div>
+                );
+              case 'stats':
+                return renderStats();
+              case 'manage':
+                return renderManage();
+              default:
+                return renderHome();
+            }
+          };
+          
+          // 初始化Lucide图标
+          useEffect(() => {
+            createIcons();
+          }, []);
+          
+          // 应用主布局
+          return (
+            <div className="min-h-screen bg-gray-100">
+              {/* 导航栏 */}
+              <nav className="bg-white shadow-md">
+                <div className="max-w-6xl mx-auto px-4">
+                  <div className="flex justify-between h-16">
+                    <div className="flex items-center">
+                      <span className="font-bold text-lg text-blue-600">TOPIK 练习</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <button 
+                        onClick={() => setActiveTab('home')}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                          activeTab === 'home' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        title="首页"
+                      >
+                        <i data-lucide="home"></i>
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab('practice')}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                          activeTab === 'practice' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        title="练习"
+                      >
+                        <i data-lucide="pencil"></i>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setActiveTab('wrong');
+                          setupQuestions('wrong');
+                        }}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                          activeTab === 'wrong' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        title="错题练习"
+                      >
+                        <i data-lucide="x-square"></i>
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab('stats')}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                          activeTab === 'stats' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        title="学习分析"
+                      >
+                        <i data-lucide="bar-chart"></i>
+                      </button>
+                      <button 
+                        onClick={() => setActiveTab('manage')}
+                        className={`px-3 py-2 rounded-md text-sm font-medium ${
+                          activeTab === 'manage' 
+                            ? 'bg-blue-100 text-blue-700' 
+                            : 'text-gray-700 hover:bg-gray-100'
+                        }`}
+                        title="题库管理"
+                      >
+                        <i data-lucide="settings"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </nav>
+
+              {/* 主要内容区域 */}
+              <main className="max-w-4xl mx-auto p-4">
+                {renderContent()}
+              </main>
+              
+              {/* 页脚 */}
+              <footer className="text-center text-gray-500 text-sm py-4 mt-8">
+                韩语TOPIK练习系统 © {new Date().getFullYear()}
+              </footer>
+            </div>
+          );
+        };
+        
+        // 渲染React应用
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
